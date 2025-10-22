@@ -3,14 +3,19 @@ mod blockchain;
 mod p2p_node;
 mod cli;
 mod consensus;
+mod wallet;
+mod web;
 
 use blockchain::Blockchain;
 use p2p_node::P2PNode;
 use cli::{add_transaction_cli, mine_block_cli, view_balance_cli, solana_demo, p2p_menu,
           generate_keypair_cli, view_public_key_cli, add_signed_transaction_cli, verify_transaction_signature_cli};
 use consensus::{ConsensusType, ProofOfStake, DelegatedProofOfStake};
+use wallet::WalletManager;
+use web::start_web_server;
 use std::sync::{Arc, Mutex};
 use std::io::{self, Write};
+use std::thread;
 
 /// 初始化区块链
 fn initialize_blockchain() -> Blockchain {
@@ -32,7 +37,7 @@ fn initialize_p2p_node(blockchain: &Arc<Mutex<Blockchain>>) -> P2PNode {
 }
 
 /// 主循环
-fn run_main_loop(blockchain: &Arc<Mutex<Blockchain>>, p2p_node: &mut P2PNode) {
+fn run_main_loop(blockchain: &Arc<Mutex<Blockchain>>, wallet_manager: &Arc<WalletManager>, p2p_node: &mut P2PNode) {
     loop {
         println!("\n请选择操作:");
         println!("1. 添加交易");
@@ -45,11 +50,13 @@ fn run_main_loop(blockchain: &Arc<Mutex<Blockchain>>, p2p_node: &mut P2PNode) {
         println!("8. 查看区块链");
         println!("9. 验证区块链");
         println!("10. 保存区块链");
-        println!("11. Solana 智能合约演示");
-        println!("12. P2P 网络操作");
-        println!("13. 共识算法管理");
-        println!("14. 退出");
-        print!("输入选择 (1-14): ");
+        println!("11. 钱包管理");
+        println!("12. 启动区块链浏览器");
+        println!("13. Solana 智能合约演示");
+        println!("14. P2P 网络操作");
+        println!("15. 共识算法管理");
+        println!("16. 退出");
+        print!("输入选择 (1-16): ");
         io::stdout().flush().unwrap();
 
         let mut input = String::new();
@@ -80,10 +87,26 @@ fn run_main_loop(blockchain: &Arc<Mutex<Blockchain>>, p2p_node: &mut P2PNode) {
                     Err(e) => println!("❌ 保存失败: {}", e),
                 }
             }
-            "11" => solana_demo(),
-            "12" => p2p_menu(blockchain, p2p_node),
-            "13" => consensus_menu(blockchain),
-            "14" => {
+            "11" => wallet::wallet_menu(wallet_manager),
+            "12" => {
+                // 启动区块链浏览器
+                let blockchain_clone = blockchain.clone();
+                let wallet_manager_clone = Arc::clone(wallet_manager);
+                thread::spawn(move || {
+                    let rt = tokio::runtime::Runtime::new().unwrap();
+                    rt.block_on(async {
+                        if let Err(e) = start_web_server(blockchain_clone, wallet_manager_clone, 3000).await {
+                            eprintln!("❌ Web服务器启动失败: {}", e);
+                        }
+                    });
+                });
+                println!("✅ 区块链浏览器已在后台启动!");
+                println!("🌐 请在浏览器中访问: http://127.0.0.1:3000/explorer");
+            }
+            "13" => solana_demo(),
+            "14" => p2p_menu(blockchain, p2p_node),
+            "15" => consensus_menu(blockchain),
+            "16" => {
                 println!("👋 再见!");
                 break;
             }
@@ -100,11 +123,15 @@ fn main() {
     let blockchain = initialize_blockchain();
     let blockchain_arc = Arc::new(Mutex::new(blockchain));
 
+    // 初始化钱包管理器
+    let wallet_manager = WalletManager::new();
+    let wallet_manager_arc = Arc::new(wallet_manager);
+
     // 初始化 P2P 节点
     let mut p2p_node = initialize_p2p_node(&blockchain_arc);
 
     // 启动主循环
-    run_main_loop(&blockchain_arc, &mut p2p_node);
+    run_main_loop(&blockchain_arc, &wallet_manager_arc, &mut p2p_node);
 }
 
 /// 共识算法管理菜单
