@@ -19,7 +19,8 @@
 
 ```
 src/
-├── main.rs           # 主程序入口和 CLI 界面
+├── main.rs           # 主程序入口
+├── cli.rs            # CLI 用户界面模块
 ├── block.rs          # 区块结构体和方法
 ├── blockchain.rs     # 区块链逻辑和操作
 ├── solana_program.rs # Solana 智能合约示例
