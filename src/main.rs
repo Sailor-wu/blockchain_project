@@ -3,7 +3,7 @@ mod blockchain;
 
 use blockchain::Blockchain;
 use block::Transaction;
-use clap::{Arg, Command};
+
 use std::io::{self, Write};
 
 fn main() {
