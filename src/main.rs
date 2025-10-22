@@ -1,5 +1,6 @@
 mod block;
 mod blockchain;
+mod solana_program;
 
 use blockchain::Blockchain;
 use block::Transaction;
@@ -30,8 +31,9 @@ fn main() {
         println!("4. 查看区块链");
         println!("5. 验证区块链");
         println!("6. 保存区块链");
-        println!("7. 退出");
-        print!("输入选择 (1-7): ");
+        println!("7. Solana 智能合约演示");
+        println!("8. 退出");
+        print!("输入选择 (1-8): ");
         io::stdout().flush().unwrap();
 
         let mut input = String::new();
@@ -58,7 +60,8 @@ fn main() {
                     Err(e) => println!("❌ 保存失败: {}", e),
                 }
             }
-            "7" => {
+            "7" => solana_demo(),
+            "8" => {
                 println!("👋 再见!");
                 break;
             }
@@ -124,4 +127,26 @@ fn view_balance_cli(blockchain: &Blockchain) {
 
     let balance = blockchain.get_balance(address);
     println!("{} 的余额: {}", address, balance);
+}
+
+fn solana_demo() {
+    println!("\n🔗 Solana 智能合约演示");
+    println!("=====================================");
+    println!("这是一个简单的 Solana 智能合约示例，实现了基本的转账功能。");
+    println!("\n📋 合约特性:");
+    println!("- 使用 Rust 编写");
+    println!("- 实现账户间转账");
+    println!("- 包含余额检查");
+    println!("- 错误处理和日志记录");
+    println!("\n💡 部署说明:");
+    println!("1. 安装 Solana CLI: solana --version");
+    println!("2. 启动本地网络: solana-test-validator");
+    println!("3. 构建合约: cargo build-bpf");
+    println!("4. 部署合约: solana program deploy target/deploy/*.so");
+    println!("\n📖 学习资源:");
+    println!("- Solana 官方文档: https://docs.solana.com/");
+    println!("- Rust 智能合约教程: https://solana.com/developers");
+    println!("\n按回车键返回主菜单...");
+    let mut input = String::new();
+    io::stdin().read_line(&mut input).unwrap();
 }
