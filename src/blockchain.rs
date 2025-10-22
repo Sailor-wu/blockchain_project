@@ -1,6 +1,7 @@
 use crate::block::{Block, Transaction};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::fs;
 
 /// 区块链结构体
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -231,6 +232,25 @@ impl Blockchain {
                 println!("{}: {}", address, balance);
             }
         }
+    }
+
+    /// 保存区块链到文件
+    pub fn save_to_file(&self, filename: &str) -> Result<(), Box<dyn std::error::Error>> {
+        let json = serde_json::to_string_pretty(self)?;
+        fs::write(filename, json)?;
+        println!("区块链已保存到文件: {}", filename);
+        Ok(())
+    }
+
+    /// 从文件加载区块链
+    pub fn load_from_file(filename: &str) -> Result<Self, Box<dyn std::error::Error>> {
+        if !fs::metadata(filename).is_ok() {
+            return Err(format!("文件不存在: {}", filename).into());
+        }
+        let json = fs::read_to_string(filename)?;
+        let blockchain: Blockchain = serde_json::from_str(&json)?;
+        println!("区块链已从文件加载: {}", filename);
+        Ok(blockchain)
     }
 }
 

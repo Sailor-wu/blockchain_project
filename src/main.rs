@@ -3,87 +3,125 @@ mod blockchain;
 
 use blockchain::Blockchain;
 use block::Transaction;
+use clap::{Arg, Command};
+use std::io::{self, Write};
 
 fn main() {
-    println!("🚀 欢迎使用 Rust 区块链演示!");
+    println!("🚀 欢迎使用 Rust 区块链 CLI!");
     println!("=====================================\n");
 
-    // 创建区块链实例
-    let mut blockchain = Blockchain::new(4, 100);
+    // 尝试从文件加载区块链，如果失败则创建新区块链
+    let mut blockchain = match Blockchain::load_from_file("blockchain.json") {
+        Ok(loaded_blockchain) => {
+            println!("✅ 从文件加载区块链成功!");
+            loaded_blockchain
+        }
+        Err(_) => {
+            println!("📁 区块链文件不存在，创建新区块链...");
+            Blockchain::new(4, 100)
+        }
+    };
 
-    println!("1. 创建区块链...");
-    blockchain.print_chain();
+    loop {
+        println!("\n请选择操作:");
+        println!("1. 添加交易");
+        println!("2. 挖矿");
+        println!("3. 查看余额");
+        println!("4. 查看区块链");
+        println!("5. 验证区块链");
+        println!("6. 保存区块链");
+        println!("7. 退出");
+        print!("输入选择 (1-7): ");
+        io::stdout().flush().unwrap();
 
-    // 创建一些交易
-    println!("\n2. 创建交易...");
+        let mut input = String::new();
+        io::stdin().read_line(&mut input).unwrap();
+        let choice = input.trim();
 
-    // 为演示目的，给一些账户初始资金
-    blockchain.balances.insert("Alice".to_string(), 1000);
-    blockchain.balances.insert("Bob".to_string(), 500);
-
-    // 添加交易
-    let tx1 = Transaction::new("Alice".to_string(), "Bob".to_string(), 100);
-    let tx2 = Transaction::new("Bob".to_string(), "Alice".to_string(), 50);
-
-    match blockchain.add_transaction(tx1) {
-        Ok(_) => println!("✅ 交易1添加成功"),
-        Err(e) => println!("❌ 交易1失败: {}", e),
+        match choice {
+            "1" => add_transaction_cli(&mut blockchain),
+            "2" => mine_block_cli(&mut blockchain),
+            "3" => view_balance_cli(&blockchain),
+            "4" => {
+                blockchain.print_chain();
+            }
+            "5" => {
+                if blockchain.is_chain_valid() {
+                    println!("✅ 区块链验证通过 - 所有区块都有效!");
+                } else {
+                    println!("❌ 区块链验证失败!");
+                }
+            }
+            "6" => {
+                match blockchain.save_to_file("blockchain.json") {
+                    Ok(_) => println!("✅ 区块链保存成功!"),
+                    Err(e) => println!("❌ 保存失败: {}", e),
+                }
+            }
+            "7" => {
+                println!("👋 再见!");
+                break;
+            }
+            _ => println!("❌ 无效选择，请重新输入."),
+        }
     }
+}
 
-    match blockchain.add_transaction(tx2) {
-        Ok(_) => println!("✅ 交易2添加成功"),
-        Err(e) => println!("❌ 交易2失败: {}", e),
+fn add_transaction_cli(blockchain: &mut Blockchain) {
+    print!("输入发送者地址: ");
+    io::stdout().flush().unwrap();
+    let mut sender = String::new();
+    io::stdin().read_line(&mut sender).unwrap();
+    let sender = sender.trim().to_string();
+
+    print!("输入接收者地址: ");
+    io::stdout().flush().unwrap();
+    let mut receiver = String::new();
+    io::stdin().read_line(&mut receiver).unwrap();
+    let receiver = receiver.trim().to_string();
+
+    print!("输入交易金额: ");
+    io::stdout().flush().unwrap();
+    let mut amount_str = String::new();
+    io::stdin().read_line(&mut amount_str).unwrap();
+    let amount: u64 = match amount_str.trim().parse() {
+        Ok(num) => num,
+        Err(_) => {
+            println!("❌ 无效金额");
+            return;
+        }
+    };
+
+    let transaction = Transaction::new(sender, receiver, amount);
+    match blockchain.add_transaction(transaction) {
+        Ok(_) => println!("✅ 交易添加成功!"),
+        Err(e) => println!("❌ 交易添加失败: {}", e),
     }
+}
 
-    // 挖矿
-    println!("\n3. 开始挖矿...");
-    match blockchain.mine_pending_transactions("Miner1".to_string()) {
+fn mine_block_cli(blockchain: &mut Blockchain) {
+    print!("输入矿工地址: ");
+    io::stdout().flush().unwrap();
+    let mut miner = String::new();
+    io::stdin().read_line(&mut miner).unwrap();
+    let miner = miner.trim().to_string();
+
+    match blockchain.mine_pending_transactions(miner) {
         Ok(block) => {
             println!("✅ 新区块挖矿成功!");
             println!("区块信息: {}", block);
         }
         Err(e) => println!("❌ 挖矿失败: {}", e),
     }
+}
 
-    // 显示区块链状态
-    blockchain.print_chain();
+fn view_balance_cli(blockchain: &Blockchain) {
+    print!("输入地址: ");
+    io::stdout().flush().unwrap();
+    let mut address = String::new();
+    io::stdin().read_line(&mut address).unwrap();
+    let address = address.trim();
 
-    // 创建更多交易和区块
-    println!("\n4. 创建更多交易和区块...");
-
-    let tx3 = Transaction::new("Alice".to_string(), "Bob".to_string(), 75);
-    blockchain.add_transaction(tx3).unwrap();
-
-    let tx4 = Transaction::new("Bob".to_string(), "Alice".to_string(), 25);
-    blockchain.add_transaction(tx4).unwrap();
-
-    // 挖矿第二个区块
-    blockchain.mine_pending_transactions("Miner2".to_string()).unwrap();
-
-    // 显示难度调整
-    println!("\n4.5. 难度调整演示:");
-    println!("当前难度: {}", blockchain.difficulty);
-
-    // 模拟快速挖矿更多区块来触发难度调整
-    for i in 3..=5 {
-        let tx = Transaction::new("Alice".to_string(), "Bob".to_string(), 10 * i as u64);
-        blockchain.add_transaction(tx).unwrap();
-        blockchain.mine_pending_transactions(format!("Miner{}", i)).unwrap();
-        println!("挖矿区块 {} 后，难度: {}", i, blockchain.difficulty);
-    }
-
-    // 最终状态
-    println!("\n5. 最终区块链状态:");
-    blockchain.print_chain();
-
-    // 验证区块链
-    println!("\n6. 验证区块链完整性...");
-    if blockchain.is_chain_valid() {
-        println!("✅ 区块链验证通过 - 所有区块都有效!");
-    } else {
-        println!("❌ 区块链验证失败!");
-    }
-
-    println!("\n🎉 区块链演示完成!");
-    println!("=====================================");
+    let balance = blockchain.get_balance(address);
+    println!("{} 的余额: {}", address, balance);
 }
