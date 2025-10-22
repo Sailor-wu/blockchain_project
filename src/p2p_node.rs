@@ -85,7 +85,7 @@ impl P2PNode {
         println!("🔗 连接到节点: {}", peer_address);
 
         match TcpStream::connect(peer_address) {
-            Ok(mut stream) => {
+                Ok(mut stream) => {
                 // 发送发现消息
                 let discovery_msg = Message::Discovery(self.address);
                 let data = serialize(&discovery_msg)?;
@@ -232,7 +232,7 @@ impl P2PNode {
             Message::RequestChain => {
                 println!("📋 收到区块链请求");
                 let blockchain = blockchain.lock().unwrap();
-                let chain = blockchain.chain.clone();
+                let _chain = blockchain.chain.clone();
                 // 发送区块链响应
                 // 这里应该发送 ResponseChain 消息
             }

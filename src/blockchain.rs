@@ -1,5 +1,5 @@
 use crate::block::{Block, Transaction};
-use crate::consensus::{Consensus, ConsensusType, ProofOfStake, DelegatedProofOfStake};
+use crate::consensus::{ConsensusType, ProofOfStake, DelegatedProofOfStake};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;

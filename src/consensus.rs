@@ -46,6 +46,7 @@ pub struct DelegationInfo {
 }
 
 /// PoS 共识实现
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ProofOfStake {
     pub stakes: HashMap<String, StakeInfo>,
     pub minimum_stake: u64,
@@ -102,7 +103,7 @@ impl Consensus for ProofOfStake {
         true
     }
 
-    fn select_validator(&self, blockchain: &Blockchain) -> Option<String> {
+    fn select_validator(&self, _blockchain: &Blockchain) -> Option<String> {
         if self.stakes.is_empty() {
             return None;
         }
@@ -136,6 +137,7 @@ impl Consensus for ProofOfStake {
 }
 
 /// DPoS 共识实现
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DelegatedProofOfStake {
     pub stakes: HashMap<String, StakeInfo>,
     pub delegations: HashMap<String, DelegationInfo>,
