@@ -1,13 +1,13 @@
 mod block;
 mod blockchain;
-mod solana_program;
 mod p2p_node;
 mod cli;
 mod consensus;
 
 use blockchain::Blockchain;
 use p2p_node::P2PNode;
-use cli::{add_transaction_cli, mine_block_cli, view_balance_cli, solana_demo, p2p_menu};
+use cli::{add_transaction_cli, mine_block_cli, view_balance_cli, solana_demo, p2p_menu,
+          generate_keypair_cli, view_public_key_cli, add_signed_transaction_cli, verify_transaction_signature_cli};
 use consensus::{ConsensusType, ProofOfStake, DelegatedProofOfStake};
 use std::sync::{Arc, Mutex};
 use std::io::{self, Write};
@@ -36,16 +36,20 @@ fn run_main_loop(blockchain: &Arc<Mutex<Blockchain>>, p2p_node: &mut P2PNode) {
     loop {
         println!("\n请选择操作:");
         println!("1. 添加交易");
-        println!("2. 挖矿");
-        println!("3. 查看余额");
-        println!("4. 查看区块链");
-        println!("5. 验证区块链");
-        println!("6. 保存区块链");
-        println!("7. Solana 智能合约演示");
-        println!("8. P2P 网络操作");
-        println!("9. 共识算法管理");
-        println!("10. 退出");
-        print!("输入选择 (1-10): ");
+        println!("2. 添加签名交易");
+        println!("3. 生成密钥对");
+        println!("4. 查看公钥");
+        println!("5. 验证交易签名");
+        println!("6. 挖矿");
+        println!("7. 查看余额");
+        println!("8. 查看区块链");
+        println!("9. 验证区块链");
+        println!("10. 保存区块链");
+        println!("11. Solana 智能合约演示");
+        println!("12. P2P 网络操作");
+        println!("13. 共识算法管理");
+        println!("14. 退出");
+        print!("输入选择 (1-14): ");
         io::stdout().flush().unwrap();
 
         let mut input = String::new();
@@ -54,28 +58,32 @@ fn run_main_loop(blockchain: &Arc<Mutex<Blockchain>>, p2p_node: &mut P2PNode) {
 
         match choice {
             "1" => add_transaction_cli(blockchain),
-            "2" => mine_block_cli(blockchain),
-            "3" => view_balance_cli(blockchain),
-            "4" => {
+            "2" => add_signed_transaction_cli(blockchain),
+            "3" => generate_keypair_cli(),
+            "4" => view_public_key_cli(),
+            "5" => verify_transaction_signature_cli(blockchain),
+            "6" => mine_block_cli(blockchain),
+            "7" => view_balance_cli(blockchain),
+            "8" => {
                 blockchain.lock().unwrap().print_chain();
             }
-            "5" => {
+            "9" => {
                 if blockchain.lock().unwrap().is_chain_valid() {
                     println!("✅ 区块链验证通过 - 所有区块都有效!");
                 } else {
                     println!("❌ 区块链验证失败!");
                 }
             }
-            "6" => {
+            "10" => {
                 match blockchain.lock().unwrap().save_to_file("blockchain.json") {
                     Ok(_) => println!("✅ 区块链保存成功!"),
                     Err(e) => println!("❌ 保存失败: {}", e),
                 }
             }
-            "7" => solana_demo(),
-            "8" => p2p_menu(blockchain, p2p_node),
-            "9" => consensus_menu(blockchain),
-            "10" => {
+            "11" => solana_demo(),
+            "12" => p2p_menu(blockchain, p2p_node),
+            "13" => consensus_menu(blockchain),
+            "14" => {
                 println!("👋 再见!");
                 break;
             }

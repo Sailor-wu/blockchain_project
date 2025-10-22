@@ -71,6 +71,13 @@ impl Blockchain {
             ));
         }
 
+        // 验证交易签名（如果是签名交易）
+        if transaction.signature.is_some() {
+            if !transaction.verify_signature() {
+                return Err("交易签名验证失败".to_string());
+            }
+        }
+
         // 计算交易哈希
         transaction.id = transaction.calculate_hash();
 

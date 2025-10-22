@@ -1,9 +1,135 @@
 use crate::blockchain::Blockchain;
-use crate::block::Transaction;
+use crate::block::{Transaction};
 use crate::p2p_node::P2PNode;
+use ring::signature::{Ed25519KeyPair, KeyPair};
 use std::sync::{Arc, Mutex};
 use std::net::SocketAddr;
 use std::io::{self, Write};
+use std::collections::HashMap;
+
+/// 生成密钥对 CLI
+pub fn generate_keypair_cli() {
+    println!("\n🔐 生成数字签名密钥对");
+    println!("=====================================");
+
+    print!("输入用户名: ");
+    io::stdout().flush().unwrap();
+    let mut username = String::new();
+    io::stdin().read_line(&mut username).unwrap();
+    let username = username.trim().to_string();
+
+    let keypair = Transaction::generate_keypair();
+
+    println!("✅ 密钥对生成成功!");
+    println!("用户名: {}", username);
+    println!("公钥: {}", hex::encode(keypair.public_key().as_ref()));
+    println!("💡 请保存好私钥信息，实际项目中应该安全存储");
+}
+
+/// 查看公钥 CLI
+pub fn view_public_key_cli() {
+    println!("\n🔍 查看公钥");
+    println!("=====================================");
+    println!("💡 注意：当前版本不支持存储密钥对的查看");
+    println!("请重新生成密钥对来获取公钥信息");
+}
+
+/// 添加签名交易 CLI
+pub fn add_signed_transaction_cli(blockchain: &Arc<Mutex<Blockchain>>) {
+    println!("\n✍️  添加签名交易");
+    println!("=====================================");
+
+    print!("输入发送者地址: ");
+    io::stdout().flush().unwrap();
+    let mut sender = String::new();
+    io::stdin().read_line(&mut sender).unwrap();
+    let sender = sender.trim().to_string();
+
+    print!("输入接收者地址: ");
+    io::stdout().flush().unwrap();
+    let mut receiver = String::new();
+    io::stdin().read_line(&mut receiver).unwrap();
+    let receiver = receiver.trim().to_string();
+
+    print!("输入交易金额: ");
+    io::stdout().flush().unwrap();
+    let mut amount_str = String::new();
+    io::stdin().read_line(&mut amount_str).unwrap();
+    let amount: u64 = match amount_str.trim().parse() {
+        Ok(num) => num,
+        Err(_) => {
+            println!("❌ 无效金额");
+            return;
+        }
+    };
+
+    // 生成临时的密钥对用于签名（实际项目中应该从安全存储中获取）
+    let keypair = Transaction::generate_keypair();
+
+    println!("🔐 已生成临时密钥对用于签名");
+    println!("公钥: {}", hex::encode(keypair.public_key().as_ref()));
+
+    let transaction = Transaction::new_signed(sender, receiver, amount, &keypair);
+    match blockchain.lock().unwrap().add_transaction(transaction) {
+        Ok(_) => println!("✅ 签名交易添加成功!"),
+        Err(e) => println!("❌ 签名交易添加失败: {}", e),
+    }
+}
+
+/// 验证交易签名 CLI
+pub fn verify_transaction_signature_cli(blockchain: &Arc<Mutex<Blockchain>>) {
+    println!("\n🔍 验证交易签名");
+    println!("=====================================");
+
+    print!("输入交易ID: ");
+    io::stdout().flush().unwrap();
+    let mut tx_id = String::new();
+    io::stdin().read_line(&mut tx_id).unwrap();
+    let tx_id = tx_id.trim().to_string();
+
+    let blockchain = blockchain.lock().unwrap();
+
+    // 在待处理交易中查找
+    for transaction in &blockchain.pending_transactions {
+        if transaction.id == tx_id {
+            if transaction.signature.is_some() {
+                if transaction.verify_signature() {
+                    println!("✅ 交易签名验证成功!");
+                    println!("交易详情:");
+                    println!("  发送者: {}", transaction.sender);
+                    println!("  接收者: {}", transaction.receiver);
+                    println!("  金额: {}", transaction.amount);
+                    println!("  公钥: {:?}", transaction.public_key);
+                } else {
+                    println!("❌ 交易签名验证失败!");
+                }
+            } else {
+                println!("❌ 该交易没有签名");
+            }
+            return;
+        }
+    }
+
+    // 在区块链中查找
+    for block in &blockchain.chain {
+        for transaction in &block.transactions {
+            if transaction.id == tx_id {
+                if transaction.signature.is_some() {
+                    if transaction.verify_signature() {
+                        println!("✅ 交易签名验证成功!");
+                    } else {
+                        println!("❌ 交易签名验证失败!");
+                    }
+                } else {
+                    println!("❌ 该交易没有签名");
+                }
+                return;
+            }
+        }
+    }
+
+    println!("❌ 未找到交易ID: {}", tx_id);
+}
 
 /// 添加交易 CLI
 pub fn add_transaction_cli(blockchain: &Arc<Mutex<Blockchain>>) {
