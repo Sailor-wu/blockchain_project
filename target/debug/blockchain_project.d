@@ -1,0 +1,1 @@
+D:\rust\project\blockchain_project\target\debug\blockchain_project.exe: D:\rust\project\blockchain_project\src\block.rs D:\rust\project\blockchain_project\src\blockchain.rs D:\rust\project\blockchain_project\src\main.rs
