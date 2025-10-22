@@ -5,18 +5,14 @@ mod p2p_node;
 
 use blockchain::Blockchain;
 use block::Transaction;
-use p2p_node::{P2PNode, Message};
+use p2p_node::P2PNode;
 use std::sync::{Arc, Mutex};
 use std::net::SocketAddr;
-
 use std::io::{self, Write};
 
-fn main() {
-    println!("🚀 欢迎使用 Rust 区块链 CLI!");
-    println!("=====================================\n");
-
-    // 尝试从文件加载区块链，如果失败则创建新区块链
-    let mut blockchain = match Blockchain::load_from_file("blockchain.json") {
+/// 初始化区块链
+fn initialize_blockchain() -> Blockchain {
+    match Blockchain::load_from_file("blockchain.json") {
         Ok(loaded_blockchain) => {
             println!("✅ 从文件加载区块链成功!");
             loaded_blockchain
@@ -25,12 +21,16 @@ fn main() {
             println!("📁 区块链文件不存在，创建新区块链...");
             Blockchain::new(4, 100)
         }
-    };
+    }
+}
 
-    // 创建 P2P 节点
-    let blockchain_arc = Arc::new(Mutex::new(blockchain));
-    let mut p2p_node = P2PNode::new("127.0.0.1:7878".parse().unwrap(), blockchain_arc.clone());
+/// 初始化 P2P 节点
+fn initialize_p2p_node(blockchain: &Arc<Mutex<Blockchain>>) -> P2PNode {
+    P2PNode::new("127.0.0.1:7878".parse().unwrap(), blockchain.clone())
+}
 
+/// 主循环
+fn run_main_loop(blockchain: &Arc<Mutex<Blockchain>>, p2p_node: &mut P2PNode) {
     loop {
         println!("\n请选择操作:");
         println!("1. 添加交易");
@@ -50,27 +50,27 @@ fn main() {
         let choice = input.trim();
 
         match choice {
-            "1" => add_transaction_cli(&blockchain_arc),
-            "2" => mine_block_cli(&blockchain_arc),
-            "3" => view_balance_cli(&blockchain_arc),
+            "1" => add_transaction_cli(blockchain),
+            "2" => mine_block_cli(blockchain),
+            "3" => view_balance_cli(blockchain),
             "4" => {
-                blockchain_arc.lock().unwrap().print_chain();
+                blockchain.lock().unwrap().print_chain();
             }
             "5" => {
-                if blockchain_arc.lock().unwrap().is_chain_valid() {
+                if blockchain.lock().unwrap().is_chain_valid() {
                     println!("✅ 区块链验证通过 - 所有区块都有效!");
                 } else {
                     println!("❌ 区块链验证失败!");
                 }
             }
             "6" => {
-                match blockchain_arc.lock().unwrap().save_to_file("blockchain.json") {
+                match blockchain.lock().unwrap().save_to_file("blockchain.json") {
                     Ok(_) => println!("✅ 区块链保存成功!"),
                     Err(e) => println!("❌ 保存失败: {}", e),
                 }
             }
             "7" => solana_demo(),
-            "8" => p2p_menu(&blockchain_arc, &mut p2p_node),
+            "8" => p2p_menu(blockchain, p2p_node),
             "9" => {
                 println!("👋 再见!");
                 break;
@@ -78,6 +78,21 @@ fn main() {
             _ => println!("❌ 无效选择，请重新输入."),
         }
     }
+}
+
+fn main() {
+    println!("🚀 欢迎使用 Rust 区块链 CLI!");
+    println!("=====================================\n");
+
+    // 初始化区块链
+    let blockchain = initialize_blockchain();
+    let blockchain_arc = Arc::new(Mutex::new(blockchain));
+
+    // 初始化 P2P 节点
+    let mut p2p_node = initialize_p2p_node(&blockchain_arc);
+
+    // 启动主循环
+    run_main_loop(&blockchain_arc, &mut p2p_node);
 }
 
 fn add_transaction_cli(blockchain: &Arc<Mutex<Blockchain>>) {
@@ -161,7 +176,7 @@ fn solana_demo() {
     io::stdin().read_line(&mut input).unwrap();
 }
 
-fn p2p_menu(blockchain: &Arc<Mutex<Blockchain>>, p2p_node: &mut P2PNode) {
+fn p2p_menu(_blockchain: &Arc<Mutex<Blockchain>>, p2p_node: &mut P2PNode) {
     loop {
         println!("\n🌐 P2P 网络操作");
         println!("=====================================");
