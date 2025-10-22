@@ -11,6 +11,7 @@ pub struct BlockHeader {
     pub hash: String,
     pub nonce: u64,
     pub difficulty: u32,
+    pub validator: Option<String>, // 验证者地址（用于 PoS/DPoS）
 }
 
 /// 区块数据
@@ -76,6 +77,7 @@ impl Block {
                 hash: String::new(),
                 nonce: 0,
                 difficulty,
+                validator: None,
             },
             transactions,
             height,

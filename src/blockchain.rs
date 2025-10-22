@@ -1,4 +1,5 @@
 use crate::block::{Block, Transaction};
+use crate::consensus::{Consensus, ConsensusType, ProofOfStake, DelegatedProofOfStake};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
@@ -11,6 +12,9 @@ pub struct Blockchain {
     pub difficulty: u32,
     pub mining_reward: u64,
     pub balances: HashMap<String, u64>,
+    pub consensus_type: ConsensusType,
+    pub pos_consensus: Option<ProofOfStake>,
+    pub dpos_consensus: Option<DelegatedProofOfStake>,
 }
 
 impl Blockchain {
@@ -22,6 +26,9 @@ impl Blockchain {
             difficulty,
             mining_reward,
             balances: HashMap::new(),
+            consensus_type: ConsensusType::PoW,
+            pos_consensus: None,
+            dpos_consensus: None,
         };
 
         // 创建创世区块
@@ -198,6 +205,9 @@ impl Blockchain {
             difficulty: self.difficulty,
             mining_reward: self.mining_reward,
             balances: HashMap::new(),
+            consensus_type: self.consensus_type.clone(),
+            pos_consensus: self.pos_consensus.clone(),
+            dpos_consensus: self.dpos_consensus.clone(),
         };
 
         if temp_blockchain.is_chain_valid() {
