@@ -28,6 +28,9 @@ impl Blockchain {
         let genesis_block = Block::create_genesis(difficulty);
         blockchain.chain.push(genesis_block);
 
+        // 添加初始余额给系统账户（用于演示）
+        blockchain.balances.insert("system".to_string(), 1000);
+
         blockchain
     }
 
@@ -248,8 +251,14 @@ impl Blockchain {
             return Err(format!("文件不存在: {}", filename).into());
         }
         let json = fs::read_to_string(filename)?;
-        let blockchain: Blockchain = serde_json::from_str(&json)?;
+        let mut blockchain: Blockchain = serde_json::from_str(&json)?;
         println!("区块链已从文件加载: {}", filename);
+
+        // 如果加载的区块链没有余额，添加初始余额给系统账户
+        if blockchain.balances.is_empty() {
+            blockchain.balances.insert("system".to_string(), 1000);
+        }
+
         Ok(blockchain)
     }
 }
