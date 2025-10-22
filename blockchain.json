@@ -1,0 +1,27 @@
+{
+  "chain": [
+    {
+      "header": {
+        "timestamp": "2025-10-22T02:34:39.752055500Z",
+        "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+        "hash": "88576bd2efc70a286708afef92ef9f3b6f6b2602a083bb19e84977bae0320d1f",
+        "nonce": 0,
+        "difficulty": 4
+      },
+      "transactions": [
+        {
+          "id": "tx_1761100479",
+          "sender": "system",
+          "receiver": "genesis",
+          "amount": 0,
+          "timestamp": "2025-10-22T02:34:39.752050200Z"
+        }
+      ],
+      "height": 0
+    }
+  ],
+  "pending_transactions": [],
+  "difficulty": 4,
+  "mining_reward": 100,
+  "balances": {}
+}
