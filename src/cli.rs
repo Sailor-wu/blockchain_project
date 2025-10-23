@@ -81,6 +81,7 @@ pub fn verify_transaction_signature_cli(blockchain: &Arc<Mutex<Blockchain>>) {
     println!("\n🔍 验证交易签名");
     println!("=====================================");
 
+    
     print!("输入交易ID: ");
     io::stdout().flush().unwrap();
     let mut tx_id = String::new();
@@ -226,8 +227,10 @@ pub fn p2p_menu(_blockchain: &Arc<Mutex<Blockchain>>, p2p_node: &mut P2PNode) {
         println!("3. 查看对等节点");
         println!("4. 广播交易");
         println!("5. 广播区块");
-        println!("6. 返回主菜单");
-        print!("输入选择 (1-6): ");
+        println!("6. 同步区块链");
+        println!("7. 广播同步状态");
+        println!("8. 返回主菜单");
+        print!("输入选择 (1-8): ");
         io::stdout().flush().unwrap();
 
         let mut input = String::new();
@@ -257,6 +260,8 @@ pub fn p2p_menu(_blockchain: &Arc<Mutex<Blockchain>>, p2p_node: &mut P2PNode) {
 
                 if let Err(e) = p2p_node.connect_to_peer(peer_addr) {
                     println!("❌ 连接失败: {}", e);
+                } else {
+                    println!("✅ 成功连接到节点: {}", peer_addr);
                 }
             }
             "3" => {
@@ -305,7 +310,45 @@ pub fn p2p_menu(_blockchain: &Arc<Mutex<Blockchain>>, p2p_node: &mut P2PNode) {
             "5" => {
                 println!("💡 区块广播功能需要进一步实现");
             }
-            "6" => break,
+            "6" => {
+                let peers = p2p_node.get_peers();
+                if peers.is_empty() {
+                    println!("❌ 没有连接的对等节点，无法同步");
+                    continue;
+                }
+
+                println!("🔗 选择要同步的节点:");
+                for (i, peer) in peers.iter().enumerate() {
+                    println!("{}. {}", i + 1, peer);
+                }
+
+                print!("输入节点编号 (1-{}): ", peers.len());
+                io::stdout().flush().unwrap();
+                let mut node_input = String::new();
+                io::stdin().read_line(&mut node_input).unwrap();
+                let node_index: usize = match node_input.trim().parse::<usize>() {
+                    Ok(num) if num > 0 && num <= peers.len() => num - 1,
+                    _ => {
+                        println!("❌ 无效节点编号");
+                        continue;
+                    }
+                };
+
+                let selected_peer = peers[node_index];
+                if let Err(e) = p2p_node.start_sync_with_peer(selected_peer) {
+                    println!("❌ 启动同步失败: {}", e);
+                } else {
+                    println!("✅ 开始与节点 {} 的同步流程", selected_peer);
+                }
+            }
+            "7" => {
+                if let Err(e) = p2p_node.broadcast_sync_status() {
+                    println!("❌ 广播同步状态失败: {}", e);
+                } else {
+                    println!("✅ 同步状态已广播到所有节点");
+                }
+            }
+            "8" => break,
             _ => println!("❌ 无效选择，请重新输入."),
         }
     }

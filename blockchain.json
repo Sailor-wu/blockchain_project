@@ -15,7 +15,9 @@
           "sender": "system",
           "receiver": "genesis",
           "amount": 0,
-          "timestamp": "2025-10-22T08:30:35.927605200Z"
+          "timestamp": "2025-10-22T08:30:35.927605200Z",
+          "signature": null,
+          "public_key": null
         }
       ],
       "height": 0
@@ -35,31 +37,101 @@
           "sender": "system",
           "receiver": "wuhaiyuan",
           "amount": 100,
-          "timestamp": "2025-10-22T08:31:25.651535500Z"
+          "timestamp": "2025-10-22T08:31:25.651535500Z",
+          "signature": null,
+          "public_key": null
         },
         {
           "id": "418b986ca2f66119d3ac2f9216f0582633aca5c85a9418b79305b1157ef6728a",
           "sender": "system",
           "receiver": "wuhaiyuan",
           "amount": 100,
-          "timestamp": "2025-10-22T08:33:06.787097Z"
+          "timestamp": "2025-10-22T08:33:06.787097Z",
+          "signature": null,
+          "public_key": null
         },
         {
           "id": "tx_1761122265",
           "sender": "system",
           "receiver": "wuhaiyuan",
           "amount": 100,
-          "timestamp": "2025-10-22T08:37:45.313191900Z"
+          "timestamp": "2025-10-22T08:37:45.313191900Z",
+          "signature": null,
+          "public_key": null
         }
       ],
       "height": 1
+    },
+    {
+      "header": {
+        "timestamp": "2025-10-23T00:42:19.613473600Z",
+        "prev_hash": "0000607a363fdc42d228a4f9f08229c6236878f5eefc2dd40cb4e3da169a7217",
+        "hash": "000b77a88b7005b546df6837d4c0bd2281f138e009741511f97bd72bab4c75be",
+        "nonce": 1353,
+        "difficulty": 3,
+        "validator": null
+      },
+      "transactions": [
+        {
+          "id": "ddbffdb1c43768fc7371f9b9e27343afc3be7dff05b72be5c58e0a9812f35367",
+          "sender": "wuhaiyuan",
+          "receiver": "lijianyang",
+          "amount": 50,
+          "timestamp": "2025-10-23T00:42:04.299599100Z",
+          "signature": "0e0dda55dcb0cc0f9d52943fc4e13c7ac413ff909e7fe77ebad8faa0e2ca1c3190942af6a19b77cb04324ce8f7dd34d859264dc8ecdcf9a9fc1958da866e4b0b",
+          "public_key": "959265985abd24c3f31a4eb2879a65e240a79a96c8da8714e97d4c054c42323e"
+        },
+        {
+          "id": "tx_1761180139",
+          "sender": "system",
+          "receiver": "lijianyang",
+          "amount": 100,
+          "timestamp": "2025-10-23T00:42:19.613436300Z",
+          "signature": null,
+          "public_key": null
+        }
+      ],
+      "height": 2
+    },
+    {
+      "header": {
+        "timestamp": "2025-10-23T01:01:26.453119800Z",
+        "prev_hash": "000b77a88b7005b546df6837d4c0bd2281f138e009741511f97bd72bab4c75be",
+        "hash": "00dae7d47b7efea8c85c3e5370d17a603a21fd85b594c8d354a5c7d7b5c05187",
+        "nonce": 82,
+        "difficulty": 2,
+        "validator": null
+      },
+      "transactions": [
+        {
+          "id": "949a3f06a68291d71208393235a61652191f882e2518f2cac6ba6a778fa8e3c0",
+          "sender": "wuhaiyuan",
+          "receiver": "dengwenjie",
+          "amount": 50,
+          "timestamp": "2025-10-23T01:01:17.812370900Z",
+          "signature": null,
+          "public_key": null
+        },
+        {
+          "id": "tx_1761181286",
+          "sender": "system",
+          "receiver": "wuhaiyuan",
+          "amount": 100,
+          "timestamp": "2025-10-23T01:01:26.453109Z",
+          "signature": null,
+          "public_key": null
+        }
+      ],
+      "height": 3
     }
   ],
   "pending_transactions": [],
-  "difficulty": 3,
+  "difficulty": 1,
   "mining_reward": 100,
   "balances": {
-    "wuhaiyuan": 300,
+    "wuhaiyuan": 850,
+    "lijianyang": 300,
+    "dengwenjie": 50,
     "system": 1000
   },
   "consensus_type": "PoS",
